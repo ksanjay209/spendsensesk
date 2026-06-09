@@ -2091,6 +2091,14 @@ window.showHistoryMonth=function(){
   renderHistory();
 };
 
+function updateDataStats(){
+  try{
+    const el=document.getElementById("dataStats");
+    if(!el)return;
+    el.innerHTML=`Expenses: <strong>${expenses.length}</strong><br>Bills: <strong>${bills.length}</strong><br>Income entries: <strong>${incomes.length}</strong><br>Custom Categories: <strong>${Object.keys(customCats).length}</strong><br>Mode: <strong>${db?"Firebase real-time sync":"Local only"}</strong>`;
+  }catch(e){}
+}
+
 // ── INIT ──
 (function init(){
   loadCustomCats();
