@@ -526,7 +526,8 @@ details summary::-webkit-details-marker{display:none}
       <div style="font-size:14px;font-weight:700;margin-bottom:8px">📊 Data</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.9;margin-bottom:14px" id="dataStats"></div>
       <button onclick="clearAllData()" style="padding:9px 16px;border-radius:10px;border:1px solid rgba(255,80,80,0.3);background:rgba(255,80,80,0.06);color:var(--red);cursor:pointer;font-size:12px;font-weight:600">🗑️ Clear All Expenses & Bills</button>
-      <div style="font-size:10px;color:var(--muted);margin-top:6px">Deletes all data from Firebase. Use before re-importing to fix wrong dates.</div>
+      <button onclick="clearLocalCache()" style="margin-left:8px;padding:9px 16px;border-radius:10px;border:1px solid rgba(255,160,0,0.3);background:rgba(255,160,0,0.06);color:var(--orange);cursor:pointer;font-size:12px;font-weight:600">🔄 Clear Local Cache</button>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px">Clear All: deletes from Firebase. Clear Cache: removes locally cached data so Firebase data is fresh.</div>
     </div>
   </div>
 
@@ -1636,6 +1637,8 @@ window._clearAllData=window.clearAllData=async function(){
     bSnap.forEach(d=>batch2.delete(d.ref));
     await batch2.commit();
     expenses=[];bills=[];
+    // Also clear localStorage cache
+    try{localStorage.removeItem("ss_exp");localStorage.removeItem("ss_bills");localStorage.removeItem("ss_income");}catch(e){}
     renderDashboard();renderBills();renderHistory();
     toast("✅ All data cleared. Now re-import from Bulk Import tab.");
   } catch(e){toast("Error: "+e.message,"err");}
@@ -2098,6 +2101,21 @@ function updateDataStats(){
     el.innerHTML=`Expenses: <strong>${expenses.length}</strong><br>Bills: <strong>${bills.length}</strong><br>Income entries: <strong>${incomes.length}</strong><br>Custom Categories: <strong>${Object.keys(customCats).length}</strong><br>Mode: <strong>${db?"Firebase real-time sync":"Local only"}</strong>`;
   }catch(e){}
 }
+
+
+window.clearLocalCache=function(){
+  try{
+    localStorage.removeItem("ss_exp");
+    localStorage.removeItem("ss_bills");
+    localStorage.removeItem("ss_income");
+    expenses=[];bills=[];incomes=[];
+    renderDashboard();renderBills();renderHistory();
+    toast("✅ Local cache cleared — Firebase data will reload");
+    // Force reload from Firebase
+    if(db){startListeners();startIncomeListener();}
+  }catch(e){toast("Error: "+e.message,"err");}
+};
+function clearLocalCache(){if(window.clearLocalCache)window.clearLocalCache();}
 
 // ── INIT ──
 (function init(){
